@@ -52,17 +52,45 @@ def _lese_txt(pfad):
 
 class Runterkühler():
     def __init__(self) -> None:
-        self.ABWARTEN = 20
-        self.ab_da_darf_ich_wieder = datetime.now().timestamp()
+        self.ABWARTEN = 5*60
+        self.PRO_TAG = 3
+        self.heute = datetime.now().date()
+        self.warte = {}
+        self.amtag = {}
         
     def kühl_genug(self, gruppenname):
-        sekunden = self.ab_da_darf_ich_wieder - datetime.now().timestamp()
-        if self.ab_da_darf_ich_wieder < datetime.now().timestamp():
-            self.zurücksetzen()
-            return True
-        else:
-            logger.info("Gruppenunterhaltung %s noch für %i Sekunden zu heiß!", gruppenname, round(sekunden))
-            return False
+        ist_kühl_genug = False
         
-    def zurücksetzen(self):
-        self.ab_da_darf_ich_wieder = datetime.now().timestamp() + self.ABWARTEN
+        if self.amtag[gruppenname] < self.PRO_TAG:
+            sekunden = self.warte[gruppenname] - datetime.now().timestamp()
+            if sekunden < 0:
+                self.warte[gruppenname] = datetime.now().timestamp() + self.ABWARTEN
+                self.amtag[gruppenname] += 1
+                ist_kühl_genug = True
+            else:
+                logger.info("Gruppenunterhaltung %s noch für %i Sekunden zu heiß!", gruppenname, round(sekunden))
+        else:
+            logger.info("Gruppenunterhaltung %s darf heute nicht mehr senden!", gruppenname)
+            
+        return ist_kühl_genug
+    
+    def anlegen_wenn_nicht_da(self, gruppenname):
+        if gruppenname not in self.warte:
+            self.warte[gruppenname] = datetime.now().timestamp() + self.ABWARTEN
+            self.amtag[gruppenname] = 0
+            
+    def bekomme_amtag(self, gruppenname):
+        self.anlegen_wenn_nicht_da(gruppenname)
+        return self.PRO_TAG
+        #return self.amtag[gruppenname] / 60
+    
+    def bekomme_warte(self, gruppenname):
+        self.anlegen_wenn_nicht_da(gruppenname)
+        return int(self.ABWARTEN / 60)
+        #return self.warte[gruppenname] / 60
+        
+    def setze_amtag(self, gruppenname, amtag):
+        raise NotImplementedError("Noch nicht implementiert") #TODO
+    
+    def setze_warte(self, gruppenname, warte):
+        raise NotImplementedError("Noch nicht implementiert") #TODO
