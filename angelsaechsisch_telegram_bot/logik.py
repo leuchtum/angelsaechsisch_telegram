@@ -9,14 +9,17 @@ AUS_PFAD = "/ausnahmen.txt"
 ANT_PFAD = "/antworten.txt"
 
 logger = logging.getLogger(__name__)
+
+
 class Vergleicher():
     def __init__(self, pfad):
         self.englisch = self.__bekomme_englisch(pfad)
 
     def __bekomme_englisch(self, pfad):
-        en_roh = _lese_txt(pfad + DB_PFAD + EN_PFAD)
-        de_roh = _lese_txt(pfad + DB_PFAD + DE_PFAD)
-        aus_roh = _lese_txt(pfad + DB_PFAD + AUS_PFAD)
+        self.rootpfad = pfad
+        en_roh = _lese_txt(self.rootpfad + DB_PFAD + EN_PFAD)
+        de_roh = _lese_txt(self.rootpfad + DB_PFAD + DE_PFAD)
+        aus_roh = _lese_txt(self.rootpfad + DB_PFAD + AUS_PFAD)
         en = set(en_roh)
         de = set(de_roh)
         aus = set(aus_roh)
@@ -35,6 +38,11 @@ class Vergleicher():
 
         return len(worte - self.englisch) != anzahl
 
+    def schreibe_ausnahme(self, ausnahme):
+        _schreibe_txt(self.rootpfad + DB_PFAD + AUS_PFAD, ausnahme)
+        self.__init__(self.rootpfad)
+
+
 class Antworten():
     def __init__(self, pfad):
         self.antworten = _lese_txt(pfad + DB_PFAD + ANT_PFAD)
@@ -50,6 +58,11 @@ def _lese_txt(pfad):
     return roh[:-1]
 
 
+def _schreibe_txt(pfad, zeile):
+    with open(pfad, "a") as datei:
+        datei.write(zeile)
+
+
 class Runterkühler():
     def __init__(self) -> None:
         self.ABWARTEN = 5*60
@@ -57,47 +70,50 @@ class Runterkühler():
         self.heute = datetime.now().date()
         self.warte = {}
         self.amtag = {}
-    
+
     def zurücksetzen(self, gruppenname):
         self.anlegen_wenn_nicht_da(gruppenname)
         self.warte[gruppenname] = datetime.now().timestamp()
         self.amtag[gruppenname] = 0
-    
+
     def kühl_genug(self, gruppenname):
         ist_kühl_genug = False
-        
+
         self.anlegen_wenn_nicht_da(gruppenname)
-        
+
         if self.amtag[gruppenname] < self.PRO_TAG:
             sekunden = self.warte[gruppenname] - datetime.now().timestamp()
             if sekunden < 0:
-                self.warte[gruppenname] = datetime.now().timestamp() + self.ABWARTEN
+                self.warte[gruppenname] = datetime.now().timestamp() + \
+                    self.ABWARTEN
                 self.amtag[gruppenname] += 1
                 ist_kühl_genug = True
             else:
-                logger.info("Gruppenunterhaltung %s noch für %i Sekunden zu heiß!", gruppenname, round(sekunden))
+                logger.info(
+                    "Gruppenunterhaltung %s noch für %i Sekunden zu heiß!", gruppenname, round(sekunden))
         else:
-            logger.info("Gruppenunterhaltung %s darf heute nicht mehr senden!", gruppenname)
-            
+            logger.info(
+                "Gruppenunterhaltung %s darf heute nicht mehr senden!", gruppenname)
+
         return ist_kühl_genug
-    
+
     def anlegen_wenn_nicht_da(self, gruppenname):
         if gruppenname not in self.warte:
             self.warte[gruppenname] = datetime.now().timestamp()
             self.amtag[gruppenname] = 0
-            
+
     def bekomme_amtag(self, gruppenname):
         self.anlegen_wenn_nicht_da(gruppenname)
         return self.PRO_TAG
-        #return self.amtag[gruppenname] / 60
-    
+        # return self.amtag[gruppenname] / 60
+
     def bekomme_warte(self, gruppenname):
         self.anlegen_wenn_nicht_da(gruppenname)
         return int(self.ABWARTEN / 60)
-        #return self.warte[gruppenname] / 60
-        
+        # return self.warte[gruppenname] / 60
+
     def setze_amtag(self, gruppenname, amtag):
-        raise NotImplementedError("Noch nicht implementiert") #TODO
-    
+        raise NotImplementedError("Noch nicht implementiert")  # TODO
+
     def setze_warte(self, gruppenname, warte):
-        raise NotImplementedError("Noch nicht implementiert") #TODO
+        raise NotImplementedError("Noch nicht implementiert")  # TODO

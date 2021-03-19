@@ -20,6 +20,7 @@ class Bot():
         self.dp.add_handler(CommandHandler("start", self.__hilfe))
         self.dp.add_handler(CommandHandler("hilfe", self.__hilfe))
         self.dp.add_handler(CommandHandler("nullen", self.__zurücksetzen))
+        self.dp.add_handler(CommandHandler("ausnahme", self.__ausnahme))
         self.dp.add_handler(CommandHandler("warte", self.__warte))
         self.dp.add_handler(CommandHandler("amtag", self.__amtag))
         self.dp.add_handler(MessageHandler(Filters.text, self.__lesen))
@@ -48,7 +49,11 @@ class Bot():
                 "\n"
                 "Außerdem könnt ihr die aktuelle Rückkühlzeit mit sowie die Anzahl der "
                 "bereits gesendeten täglichen Nachrichten mit dem Befehl /nullen "
-                "zurücksetzen."
+                "zurücksetzen.\n"
+                "\n"
+                "Falls der ich mal ein Wort völlig falsch verstehe, könnt ihr das "
+                "Wort über /ausnahme WORT von einer weiteren höflichen Erinnerung "
+                "ausschließen."
             )
             self.__senden_log(update, "HILFE_NACHRICHT")
             update.message.reply_text(nachricht)
@@ -90,6 +95,17 @@ class Bot():
             self.__senden_log(update, "ZURÜCKSETZEN_NACHRICHT")
             update.message.reply_text(nachricht)
             
+    def __ausnahme(self, update, context):
+        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
+            ausnahme = context.args[0]
+            self.vgl.schreibe_ausnahme(ausnahme)
+            nachricht = (
+                f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr"
+            )
+            self.__senden_log(update, "AUSNAHME_NACHRICHT")
+            update.message.reply_text(nachricht)
+            
+            
     def __lesen(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
             nachricht = update.message.text
@@ -113,7 +129,7 @@ class Bot():
         return False
     
     def __hat_ein_argument(self, update):
-        return True
+        return True #TODO
 
     def __aufbereiten(self, string):
         return string.split(" ")
