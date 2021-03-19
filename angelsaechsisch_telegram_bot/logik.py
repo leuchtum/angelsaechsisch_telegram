@@ -1,12 +1,14 @@
 import random
 from datetime import datetime
 import logging
+import json
 
 DB_PFAD = "/angelsaechsisch_telegram_bot/data"
 EN_PFAD = "/google-10000-english.txt"
 DE_PFAD = "/de.txt"
 AUS_PFAD = "/ausnahmen.txt"
 ANT_PFAD = "/antworten.txt"
+GRZ_PFAD = "/grenzen.json"
 
 logger = logging.getLogger(__name__)
 
@@ -60,32 +62,40 @@ def _lese_txt(pfad):
 
 def _schreibe_txt(pfad, zeile):
     with open(pfad, "a") as datei:
+        zeile += "\n"
         datei.write(zeile)
 
 
 class Runterkühler():
-    def __init__(self) -> None:
-        self.ABWARTEN = 5*60
-        self.PRO_TAG = 3
+    STANDARD_ABWARTEN = 5*60
+    STANDARD_AMTAG = 10
+    
+    def __init__(self, pfad) -> None:
+        self.rootpfad = pfad
         self.heute = datetime.now().date()
         self.warte = {}
         self.amtag = {}
+        self.grenzen = {}
+        self.lese_von_datei()
 
     def zurücksetzen(self, gruppenname):
         self.anlegen_wenn_nicht_da(gruppenname)
         self.warte[gruppenname] = datetime.now().timestamp()
         self.amtag[gruppenname] = 0
+        logger.info("Hitze in Gruppenunterhaltung %s zurückgesetzt", gruppenname)
 
     def kühl_genug(self, gruppenname):
         ist_kühl_genug = False
 
         self.anlegen_wenn_nicht_da(gruppenname)
-
-        if self.amtag[gruppenname] < self.PRO_TAG:
+        
+        # TODO Tageswechsel erkennen!
+        
+        if self.amtag[gruppenname] < self.grenzen[gruppenname]["amtag"]:
             sekunden = self.warte[gruppenname] - datetime.now().timestamp()
             if sekunden < 0:
                 self.warte[gruppenname] = datetime.now().timestamp() + \
-                    self.ABWARTEN
+                    self.grenzen[gruppenname]["warte"]
                 self.amtag[gruppenname] += 1
                 ist_kühl_genug = True
             else:
@@ -101,19 +111,34 @@ class Runterkühler():
         if gruppenname not in self.warte:
             self.warte[gruppenname] = datetime.now().timestamp()
             self.amtag[gruppenname] = 0
+            self.grenzen[gruppenname] = {
+                "warte": self.STANDARD_ABWARTEN,
+                "amtag": self.STANDARD_AMTAG
+            }
+            self.schreibe_in_datei()
 
     def bekomme_amtag(self, gruppenname):
         self.anlegen_wenn_nicht_da(gruppenname)
-        return self.PRO_TAG
-        # return self.amtag[gruppenname] / 60
+        return self.grenzen[gruppenname]["amtag"]
 
     def bekomme_warte(self, gruppenname):
         self.anlegen_wenn_nicht_da(gruppenname)
-        return int(self.ABWARTEN / 60)
-        # return self.warte[gruppenname] / 60
+        return self.grenzen[gruppenname]["warte"]
 
     def setze_amtag(self, gruppenname, amtag):
-        raise NotImplementedError("Noch nicht implementiert")  # TODO
+        self.grenzen[gruppenname]["amtag"] = amtag
+        self.schreibe_in_datei()
 
     def setze_warte(self, gruppenname, warte):
-        raise NotImplementedError("Noch nicht implementiert")  # TODO
+        self.grenzen[gruppenname]["warte"] = warte
+        self.schreibe_in_datei()
+        
+    def schreibe_in_datei(self):
+        pfad = self.rootpfad + DB_PFAD + GRZ_PFAD
+        with open(pfad, "w") as datei:
+            json.dump(self.grenzen, datei)
+        
+    def lese_von_datei(self):
+        pfad = self.rootpfad + DB_PFAD + GRZ_PFAD
+        with open(pfad, "r") as datei:
+            self.grenzen = json.load(datei)

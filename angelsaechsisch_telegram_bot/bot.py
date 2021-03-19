@@ -12,7 +12,7 @@ class Bot():
     def __init__(self, key):
         self.vgl = Vergleicher(os.getcwd())
         self.ant = Antworten(os.getcwd())
-        self.kühl = Runterkühler()
+        self.kühl = Runterkühler(os.getcwd())
 
         self.updater = Updater(key, use_context=True)
         self.dp = self.updater.dispatcher
@@ -35,15 +35,17 @@ class Bot():
                 "dass hier nur Deutsch gesprochen wird. "
                 "Dazu könnt ihr folgende Befehle schicken:\n"
                 "\n"
-                "/warte 20\n"
+                "Befehl: /warte 20\n"
                 "Damit warte ich beispielsweise zwischen jeder höflichen "
                 "Erinnerung 20 Minuten.\n"
                 "\n"
-                "/amtag 10\n"
+                "Befehl: /amtag 10\n"
                 "Damit schicke ich euch maximal 10 höfliche Erinnerungen pro Tag.\n"
                 "\n"
-                f"Aktuell erinnere ich euch maximal {self.kühl.bekomme_amtag(gruppenname)} "
-                f"pro Tag mit einem Mindestabstand von {self.kühl.bekomme_warte(gruppenname)} "
+                "Aktuell erinnere ich euch maximal "
+                f"{self.kühl.bekomme_amtag(gruppenname)} "
+                "pro Tag mit einem Mindestabstand von "
+                f"{int(self.kühl.bekomme_warte(gruppenname)/60)} "
                 "Minuten daran, dass hier nur reinstes und feinstes Deutsch "
                 "gesprochen wird.\n"
                 "\n"
@@ -51,7 +53,7 @@ class Bot():
                 "bereits gesendeten täglichen Nachrichten mit dem Befehl /nullen "
                 "zurücksetzen.\n"
                 "\n"
-                "Falls der ich mal ein Wort völlig falsch verstehe, könnt ihr das "
+                "Falls ich mal ein Wort völlig falsch verstehe, könnt ihr das "
                 "Wort über /ausnahme WORT von einer weiteren höflichen Erinnerung "
                 "ausschließen."
             )
@@ -62,12 +64,17 @@ class Bot():
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
             gruppenname = update.message.chat.title.replace(" ", "_")
             zeit = context.args[0]
-            self.kühl.setze_warte(gruppenname, zeit)
-            nachricht = (
+            try:
+                zeit = int(zeit)
+                self.kühl.setze_warte(gruppenname, zeit*60)
+                nachricht = (
                 "Aber gerne doch! "
-                "Die Wartezeit zwischen den höflichen Erinnerungen beträgt "
+                "Die Rückkühlzeit zwischen den höflichen Erinnerungen beträgt "
                 f"nun {zeit} Minuten."
-            )
+                )
+            except:
+                nachricht = "Ich habe dich leider nicht verstanden."
+            
             self.__senden_log(update, "AMTAG_NACHRICHT")
             update.message.reply_text(nachricht)
 
@@ -75,13 +82,18 @@ class Bot():
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
             gruppenname = update.message.chat.title.replace(" ", "_")
             maximal = context.args[0]
-            self.kühl.setze_amtag(gruppenname, maximal)
-            nachricht = (
-                "Wie du willst, Kamerad! "
-                f"Ich erinnere euch nun maximal {maximal} mal pro Tag daran, "
-                "dass in dieser Gruppenunterhaltung striktes "
-                "Angelsächsisch-Verbot besteht."
-            )
+            try:
+                maximal = int(maximal)
+                self.kühl.setze_amtag(gruppenname, maximal)
+                nachricht = (
+                    "Wie du willst, Kamerad! "
+                    f"Ich erinnere euch nun maximal {maximal} mal pro Tag daran, "
+                    "dass in dieser Gruppenunterhaltung striktes "
+                    "Angelsächsisch-Verbot besteht."
+                )
+            except:
+                nachricht = "Ich habe dich leider nicht verstanden."
+            
             self.__senden_log(update, "AMTAG_NACHRICHT")
             update.message.reply_text(nachricht)
 
