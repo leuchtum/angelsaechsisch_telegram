@@ -57,9 +57,16 @@ class Runterkühler():
         self.heute = datetime.now().date()
         self.warte = {}
         self.amtag = {}
-        
+    
+    def zurücksetzen(self, gruppenname):
+        self.anlegen_wenn_nicht_da(gruppenname)
+        self.warte[gruppenname] = datetime.now().timestamp()
+        self.amtag[gruppenname] = 0
+    
     def kühl_genug(self, gruppenname):
         ist_kühl_genug = False
+        
+        self.anlegen_wenn_nicht_da(gruppenname)
         
         if self.amtag[gruppenname] < self.PRO_TAG:
             sekunden = self.warte[gruppenname] - datetime.now().timestamp()
@@ -76,7 +83,7 @@ class Runterkühler():
     
     def anlegen_wenn_nicht_da(self, gruppenname):
         if gruppenname not in self.warte:
-            self.warte[gruppenname] = datetime.now().timestamp() + self.ABWARTEN
+            self.warte[gruppenname] = datetime.now().timestamp()
             self.amtag[gruppenname] = 0
             
     def bekomme_amtag(self, gruppenname):

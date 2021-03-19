@@ -19,6 +19,7 @@ class Bot():
 
         self.dp.add_handler(CommandHandler("start", self.__hilfe))
         self.dp.add_handler(CommandHandler("hilfe", self.__hilfe))
+        self.dp.add_handler(CommandHandler("nullen", self.__zurücksetzen))
         self.dp.add_handler(CommandHandler("warte", self.__warte))
         self.dp.add_handler(CommandHandler("amtag", self.__amtag))
         self.dp.add_handler(MessageHandler(Filters.text, self.__lesen))
@@ -43,7 +44,11 @@ class Bot():
                 f"Aktuell erinnere ich euch maximal {self.kühl.bekomme_amtag(gruppenname)} "
                 f"pro Tag mit einem Mindestabstand von {self.kühl.bekomme_warte(gruppenname)} "
                 "Minuten daran, dass hier nur reinstes und feinstes Deutsch "
-                "gesprochen wird."
+                "gesprochen wird.\n"
+                "\n"
+                "Außerdem könnt ihr die aktuelle Rückkühlzeit mit sowie die Anzahl der "
+                "bereits gesendeten täglichen Nachrichten mit dem Befehl /nullen "
+                "zurücksetzen."
             )
             self.__senden_log(update, "HILFE_NACHRICHT")
             update.message.reply_text(nachricht)
@@ -75,6 +80,16 @@ class Bot():
             self.__senden_log(update, "AMTAG_NACHRICHT")
             update.message.reply_text(nachricht)
 
+    def __zurücksetzen(self, update, context):
+        if self.__ist_gruppenunterhaltung(update):
+            gruppenname = update.message.chat.title.replace(" ", "_")
+            self.kühl.zurücksetzen(gruppenname)
+            nachricht = (
+                "Erledigt!"
+                )
+            self.__senden_log(update, "ZURÜCKSETZEN_NACHRICHT")
+            update.message.reply_text(nachricht)
+            
     def __lesen(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
             nachricht = update.message.text
