@@ -61,25 +61,25 @@ class Bot():
             update.message.reply_text(nachricht)
 
     def __warte(self, update, context):
-        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
+        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context):
             gruppenname = update.message.chat.title.replace(" ", "_")
             zeit = context.args[0]
             try:
                 zeit = int(zeit)
                 self.kühl.setze_warte(gruppenname, zeit*60)
                 nachricht = (
-                "Aber gerne doch! "
-                "Die Rückkühlzeit zwischen den höflichen Erinnerungen beträgt "
-                f"nun {zeit} Minuten."
+                    "Aber gerne doch! "
+                    "Die Rückkühlzeit zwischen den höflichen Erinnerungen beträgt "
+                    f"nun {zeit} Minuten."
                 )
             except:
                 nachricht = "Ich habe dich leider nicht verstanden."
-            
+
             self.__senden_log(update, "AMTAG_NACHRICHT")
             update.message.reply_text(nachricht)
 
     def __amtag(self, update, context):
-        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
+        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context, update):
             gruppenname = update.message.chat.title.replace(" ", "_")
             maximal = context.args[0]
             try:
@@ -93,31 +93,30 @@ class Bot():
                 )
             except:
                 nachricht = "Ich habe dich leider nicht verstanden."
-            
+
             self.__senden_log(update, "AMTAG_NACHRICHT")
             update.message.reply_text(nachricht)
 
     def __zurücksetzen(self, update, context):
-        if self.__ist_gruppenunterhaltung(update):
+        if self.__ist_gruppenunterhaltung(update, update):
             gruppenname = update.message.chat.title.replace(" ", "_")
             self.kühl.zurücksetzen(gruppenname)
             nachricht = (
                 "Erledigt!"
-                )
+            )
             self.__senden_log(update, "ZURÜCKSETZEN_NACHRICHT")
             update.message.reply_text(nachricht)
-            
+
     def __ausnahme(self, update, context):
-        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
+        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context, update):
             ausnahme = context.args[0]
             self.vgl.schreibe_ausnahme(ausnahme)
             nachricht = (
-                f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr"
+                f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr."
             )
             self.__senden_log(update, "AUSNAHME_NACHRICHT")
             update.message.reply_text(nachricht)
-            
-            
+
     def __lesen(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
             nachricht = update.message.text
@@ -139,9 +138,13 @@ class Bot():
         update.message.reply_text(
             "Roboter läuft nur in Gruppenunterhaltungen.")
         return False
-    
-    def __hat_ein_argument(self, update):
-        return True #TODO
+
+    def __hat_ein_argument(self, context, update):
+        if len(context.args) == 1:
+            return True
+        update.message.reply_text(
+            "Du musst diesen Befehl richtig nutzen. Siehe: /hilfe")
+        return False
 
     def __aufbereiten(self, string):
         return string.split(" ")
@@ -150,7 +153,7 @@ class Bot():
         gruppenname = update.message.chat.title.replace(" ", "_")
         nutzer = update.message.from_user.full_name.replace(" ", "_")
         logger.info('Senden: %s@%s: %s', nutzer, gruppenname, nachricht)
-        
+
     def __fehler(self, update, context):
         logger.warning(
             'Nachricht "%s" hat einen Fehler erzeugt: "%s"', update, context.error)
