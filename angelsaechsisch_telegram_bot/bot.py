@@ -112,7 +112,7 @@ class Bot():
             ausnahme = context.args[0]
             self.vgl.schreibe_ausnahme(ausnahme)
             nachricht = (
-                f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr."
+                f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr"
             )
             self.__senden_log(update, "AUSNAHME_NACHRICHT")
             update.message.reply_text(nachricht)
