@@ -30,35 +30,36 @@ class Bot():
         if self.__ist_gruppenunterhaltung(update):
             gruppenname = update.message.chat.title.replace(" ", "_")
             nachricht = (
-                "Hallo Sportsfreunde!\n"
-                "Ihr könnt mir gerne sagen, wie oft ich euch erinnern soll, "
-                "dass hier nur Deutsch gesprochen wird. "
-                "Dazu könnt ihr folgende Befehle schicken:\n"
+                "<b>Hallo Sportsfreunde!</b>\n"
                 "\n"
-                "Befehl: /warte 20\n"
+                "Meine Aufgabe ist es zu überwachen, dass hier "
+                "nur reinstes und feinstes Deutsch genutzt wird. "
+                "Im Moment erinnere ich euch daran "
+                f"<b>maximal {self.kühl.bekomme_amtag(gruppenname)} pro Tag</b> "
+                "mit einem <b>Mindestabstand von "
+                f"{int(self.kühl.bekomme_warte(gruppenname)/60)} Minuten</b>.\n"
+                "\n"
+                "Wenn euch diese Einstellungen nicht genehm sind, könnt ihr "
+                "sie natürlich anpassen. Dazu gibt es folgende Befehle:\n"
+                "\n"
+                "<b>Kommando:</b> /warte 20\n"
                 "Damit warte ich beispielsweise zwischen jeder höflichen "
                 "Erinnerung 20 Minuten.\n"
                 "\n"
-                "Befehl: /amtag 10\n"
+                "<b>Kommando:</b> /amtag 10\n"
                 "Damit schicke ich euch maximal 10 höfliche Erinnerungen pro Tag.\n"
                 "\n"
-                "Aktuell erinnere ich euch maximal "
-                f"{self.kühl.bekomme_amtag(gruppenname)} "
-                "pro Tag mit einem Mindestabstand von "
-                f"{int(self.kühl.bekomme_warte(gruppenname)/60)} "
-                "Minuten daran, dass hier nur reinstes und feinstes Deutsch "
-                "gesprochen wird.\n"
+                "<b>Kommando:</b> /nullen\n"
+                "Mit diesem Befehl werden die Rückzühlzeit und die Anzahl der "
+                "am Tag versandten Nachrichten zurückgesetzt.\n"
                 "\n"
-                "Außerdem könnt ihr die aktuelle Rückkühlzeit mit sowie die Anzahl der "
-                "bereits gesendeten täglichen Nachrichten mit dem Befehl /nullen "
-                "zurücksetzen.\n"
-                "\n"
-                "Falls ich mal ein Wort völlig falsch verstehe, könnt ihr das "
-                "Wort über /ausnahme WORT von einer weiteren höflichen Erinnerung "
-                "ausschließen."
+                "<b>Kommando:</b> /ausnahme WORT\n"
+                "Es kann vorkommen, dass ich ein deutsches Wort fehlinterpretiere. "
+                "Wenn ich in Zukunft auf dieses Wort nicht mehr reagieren soll, "
+                "nutzt einfach dieses Kommando."
             )
             self.__senden_log(update, "HILFE_NACHRICHT")
-            update.message.reply_text(nachricht)
+            update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __warte(self, update, context):
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
@@ -70,13 +71,13 @@ class Bot():
                 nachricht = (
                 "Aber gerne doch! "
                 "Die Rückkühlzeit zwischen den höflichen Erinnerungen beträgt "
-                f"nun {zeit} Minuten."
+                f"nun <b>{zeit} Minuten</b>."
                 )
             except:
                 nachricht = "Ich habe dich leider nicht verstanden."
             
             self.__senden_log(update, "AMTAG_NACHRICHT")
-            update.message.reply_text(nachricht)
+            update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __amtag(self, update, context):
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(update):
@@ -87,7 +88,8 @@ class Bot():
                 self.kühl.setze_amtag(gruppenname, maximal)
                 nachricht = (
                     "Wie du willst, Kamerad! "
-                    f"Ich erinnere euch nun maximal {maximal} mal pro Tag daran, "
+                    "Ich erinnere euch nun maximal "
+                    f"<b>{maximal} mal pro Tag</b> daran, "
                     "dass in dieser Gruppenunterhaltung striktes "
                     "Angelsächsisch-Verbot besteht."
                 )
@@ -95,7 +97,7 @@ class Bot():
                 nachricht = "Ich habe dich leider nicht verstanden."
             
             self.__senden_log(update, "AMTAG_NACHRICHT")
-            update.message.reply_text(nachricht)
+            update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __zurücksetzen(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
@@ -112,7 +114,7 @@ class Bot():
             ausnahme = context.args[0]
             self.vgl.schreibe_ausnahme(ausnahme)
             nachricht = (
-                f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr"
+                f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr."
             )
             self.__senden_log(update, "AUSNAHME_NACHRICHT")
             update.message.reply_text(nachricht)
