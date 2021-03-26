@@ -69,9 +69,9 @@ class Bot():
                 zeit = int(zeit)
                 self.kühl.setze_warte(gruppennummer, zeit*60)
                 nachricht = (
-                "Aber gerne doch! "
-                "Die Rückkühlzeit zwischen den höflichen Erinnerungen beträgt "
-                f"nun <b>{zeit} Minuten</b>."
+                    "Aber gerne doch! "
+                    "Die Rückkühlzeit zwischen den höflichen Erinnerungen beträgt "
+                    f"nun <b>{zeit} Minuten</b>."
                 )
             except:
                 nachricht = "Ich habe dich leider nicht verstanden."
@@ -125,7 +125,8 @@ class Bot():
             gruppennummer, nutzernummer = self.extrahiere(update)
             worte = self.__aufbereiten(nachricht)
 
-            logger.info('Erhalten: %s@%s: %s', nutzernummer, gruppennummer, nachricht)
+            logger.info('Erhalten: %s@%s: %s', nutzernummer,
+                        gruppennummer, nachricht)
 
             if self.vgl.beinhaltet_en(worte) and self.kühl.kühl_genug(gruppennummer):
                 antwort = self.ant.nächste_antwort(gruppennummer)
@@ -152,7 +153,8 @@ class Bot():
 
     def __senden_log(self, update, context, nachricht):
         gruppennummer, nutzernummer = self.extrahiere(update)
-        logger.info('Senden: %s@%s: %s', nutzernummer, gruppennummer, nachricht)
+        logger.info('Senden: %s@%s: %s', nutzernummer,
+                    gruppennummer, nachricht)
 
     def __fehler(self, update, context):
         logger.warning(
@@ -162,7 +164,7 @@ class Bot():
         gruppennummer = str(update.message.chat.id)
         nutzernummer = str(update.message.from_user.id)
         return gruppennummer, nutzernummer
-    
+
     def arbeite(self):
         self.updater.start_polling()
         self.updater.idle()
