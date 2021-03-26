@@ -22,14 +22,23 @@ class Vergleicher():
         en_roh = _lese_txt(self.rootpfad + DB_PFAD + EN_PFAD)
         de_roh = _lese_txt(self.rootpfad + DB_PFAD + DE_PFAD)
         aus_roh = _lese_txt(self.rootpfad + DB_PFAD + AUS_PFAD)
+        
         en = set(en_roh)
         de = set(de_roh)
         aus = set(aus_roh)
+        
         en = {i.lower() for i in en}
         de = {i.lower() for i in de}
         aus = {i.lower() for i in aus}
+        
+        kurze = set()
+        for i in en:
+            if len(i) < 3:
+                kurze.add(i)
+        
         en_clean = en - de
         en_clean = en_clean - aus
+        en_clean = en_clean - kurze
         return en_clean
 
     def beinhaltet_en(self, worte):
