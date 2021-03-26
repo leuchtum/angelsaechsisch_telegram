@@ -62,7 +62,7 @@ class Bot():
             update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __warte(self, update, context):
-        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context):
+        if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context, update):
             gruppenname = update.message.chat.title.replace(" ", "_")
             zeit = context.args[0]
             try:
@@ -129,7 +129,7 @@ class Bot():
             logger.info('Erhalten: %s@%s: %s', nutzer, gruppenname, nachricht)
 
             if self.vgl.beinhaltet_en(worte) and self.kühl.kühl_genug(gruppenname):
-                antwort = self.ant.zufall_antwort()
+                antwort = self.ant.nächste_antwort(gruppenname)
                 self.__senden_log(update, antwort)
                 update.message.reply_text(
                     "<b>"+antwort+"</b>", parse_mode="HTML")
