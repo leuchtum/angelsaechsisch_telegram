@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import date, datetime
 import logging
 import json
 
@@ -88,8 +88,7 @@ class Runterkühler():
         ist_kühl_genug = False
 
         self.anlegen_wenn_nicht_da(gruppenname)
-        
-        # TODO Tageswechsel erkennen!
+        self.evtl_neuer_tag()
         
         if self.amtag[gruppenname] < self.grenzen[gruppenname]["amtag"]:
             sekunden = self.warte[gruppenname] - datetime.now().timestamp()
@@ -109,7 +108,7 @@ class Runterkühler():
 
     def anlegen_wenn_nicht_da(self, gruppenname):
         if gruppenname not in self.warte:
-            self.warte[gruppenname] = datetime.now().timestamp()
+            self.warte[gruppenname] = 0
             self.amtag[gruppenname] = 0
             self.grenzen[gruppenname] = {
                 "warte": self.STANDARD_ABWARTEN,
@@ -142,3 +141,11 @@ class Runterkühler():
         pfad = self.rootpfad + DB_PFAD + GRZ_PFAD
         with open(pfad, "r") as datei:
             self.grenzen = json.load(datei)
+
+    def evtl_neuer_tag(self):
+        if self.heute != datetime.now().date():
+            for gruppenname in self.warte:
+                self.warte[gruppenname] = 0
+            for gruppenname in self.amtag:
+                self.amtag[gruppenname] = 0
+            self.heute = datetime.now().date()
