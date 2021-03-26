@@ -68,15 +68,15 @@ class Antworten():
     def zufall_antwort(self):
         return random.choice(self.antworten)
     
-    def nächste_antwort(self, gruppenname):
+    def nächste_antwort(self, gruppennummer):
         def antworten_generator(antworten):
             while True:
                 yield from antworten
         
-        if gruppenname not in self.generatoren:
-            self.generatoren[gruppenname] = antworten_generator(self.antworten)
+        if gruppennummer not in self.generatoren:
+            self.generatoren[gruppennummer] = antworten_generator(self.antworten)
             
-        return next(self.generatoren[gruppenname])
+        return next(self.generatoren[gruppennummer])
 
 
 def _lese_txt(pfad):
@@ -104,64 +104,64 @@ class Runterkühler():
         self.grenzen = {}
         self.lese_von_datei()
 
-    def zurücksetzen(self, gruppenname):
-        self.anlegen_wenn_nicht_da(gruppenname)
-        self.warte[gruppenname] = datetime.now().timestamp()
-        self.amtag[gruppenname] = 0
-        logger.info("Hitze in Gruppenunterhaltung %s zurückgesetzt", gruppenname)
+    def zurücksetzen(self, gruppennummer):
+        self.anlegen_wenn_nicht_da(gruppennummer)
+        self.warte[gruppennummer] = datetime.now().timestamp()
+        self.amtag[gruppennummer] = 0
+        logger.info("Hitze in Gruppenunterhaltung %s zurückgesetzt", gruppennummer)
 
-    def kühl_genug(self, gruppenname):
+    def kühl_genug(self, gruppennummer):
         ist_kühl_genug = False
 
-        self.anlegen_wenn_nicht_da(gruppenname)
+        self.anlegen_wenn_nicht_da(gruppennummer)
         self.evtl_neuer_tag()
         
-        if self.amtag[gruppenname] < self.grenzen[gruppenname]["amtag"]:
-            sekunden = self.warte[gruppenname] - datetime.now().timestamp()
+        if self.amtag[gruppennummer] < self.grenzen[gruppennummer]["amtag"]:
+            sekunden = self.warte[gruppennummer] - datetime.now().timestamp()
             if sekunden < 0:
-                self.warte[gruppenname] = datetime.now().timestamp() + \
-                    self.grenzen[gruppenname]["warte"]
-                self.amtag[gruppenname] += 1
+                self.warte[gruppennummer] = datetime.now().timestamp() + \
+                    self.grenzen[gruppennummer]["warte"]
+                self.amtag[gruppennummer] += 1
                 ist_kühl_genug = True
             else:
                 logger.info(
-                    "Gruppenunterhaltung %s noch für %i Sekunden zu heiß!", gruppenname, round(sekunden))
+                    "Gruppenunterhaltung %s noch für %i Sekunden zu heiß!", gruppennummer, round(sekunden))
         else:
             logger.info(
-                "Gruppenunterhaltung %s darf heute nicht mehr senden!", gruppenname)
+                "Gruppenunterhaltung %s darf heute nicht mehr senden!", gruppennummer)
 
         return ist_kühl_genug
 
-    def anlegen_wenn_nicht_da(self, gruppenname):
-        if gruppenname not in self.warte:
-            self.warte[gruppenname] = 0
-            self.amtag[gruppenname] = 0
+    def anlegen_wenn_nicht_da(self, gruppennummer):
+        if gruppennummer not in self.warte:
+            self.warte[gruppennummer] = 0
+            self.amtag[gruppennummer] = 0
             
-        if gruppenname not in self.grenzen:
-            self.grenzen[gruppenname] = {
+        if gruppennummer not in self.grenzen:
+            self.grenzen[gruppennummer] = {
                 "warte": self.STANDARD_ABWARTEN,
                 "amtag": self.STANDARD_AMTAG
             }
             self.schreibe_in_datei()
 
-    def bekomme_amtag(self, gruppenname):
-        self.anlegen_wenn_nicht_da(gruppenname)
-        return self.grenzen[gruppenname]["amtag"]
+    def bekomme_amtag(self, gruppennummer):
+        self.anlegen_wenn_nicht_da(gruppennummer)
+        return self.grenzen[gruppennummer]["amtag"]
 
-    def bekomme_warte(self, gruppenname):
-        self.anlegen_wenn_nicht_da(gruppenname)
-        return self.grenzen[gruppenname]["warte"]
+    def bekomme_warte(self, gruppennummer):
+        self.anlegen_wenn_nicht_da(gruppennummer)
+        return self.grenzen[gruppennummer]["warte"]
 
-    def setze_amtag(self, gruppenname, amtag):
-        self.anlegen_wenn_nicht_da(gruppenname)
-        self.grenzen[gruppenname]["amtag"] = amtag
-        self.amtag[gruppenname] = 0
+    def setze_amtag(self, gruppennummer, amtag):
+        self.anlegen_wenn_nicht_da(gruppennummer)
+        self.grenzen[gruppennummer]["amtag"] = amtag
+        self.amtag[gruppennummer] = 0
         self.schreibe_in_datei()
 
-    def setze_warte(self, gruppenname, warte):
-        self.anlegen_wenn_nicht_da(gruppenname)
-        self.grenzen[gruppenname]["warte"] = warte
-        self.warte[gruppenname] = 0
+    def setze_warte(self, gruppennummer, warte):
+        self.anlegen_wenn_nicht_da(gruppennummer)
+        self.grenzen[gruppennummer]["warte"] = warte
+        self.warte[gruppennummer] = 0
         self.schreibe_in_datei()
         
     def schreibe_in_datei(self):
@@ -180,8 +180,8 @@ class Runterkühler():
 
     def evtl_neuer_tag(self):
         if self.heute != datetime.now().date():
-            for gruppenname in self.warte:
-                self.warte[gruppenname] = 0
-            for gruppenname in self.amtag:
-                self.amtag[gruppenname] = 0
+            for gruppennummer in self.warte:
+                self.warte[gruppennummer] = 0
+            for gruppennummer in self.amtag:
+                self.amtag[gruppennummer] = 0
             self.heute = datetime.now().date()
