@@ -76,7 +76,7 @@ class Bot():
             except:
                 nachricht = "Ich habe dich leider nicht verstanden."
 
-            self.__senden_log(update, context, "AMTAG_NACHRICHT")
+            self.__senden_log(update, context, "WARTE_NACHRICHT")
             update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __amtag(self, update, context):

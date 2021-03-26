@@ -136,6 +136,8 @@ class Runterkühler():
         if gruppenname not in self.warte:
             self.warte[gruppenname] = 0
             self.amtag[gruppenname] = 0
+            
+        if gruppenname not in self.grenzen:
             self.grenzen[gruppenname] = {
                 "warte": self.STANDARD_ABWARTEN,
                 "amtag": self.STANDARD_AMTAG
@@ -151,11 +153,13 @@ class Runterkühler():
         return self.grenzen[gruppenname]["warte"]
 
     def setze_amtag(self, gruppenname, amtag):
+        self.anlegen_wenn_nicht_da(gruppenname)
         self.grenzen[gruppenname]["amtag"] = amtag
         self.amtag[gruppenname] = 0
         self.schreibe_in_datei()
 
     def setze_warte(self, gruppenname, warte):
+        self.anlegen_wenn_nicht_da(gruppenname)
         self.grenzen[gruppenname]["warte"] = warte
         self.warte[gruppenname] = 0
         self.schreibe_in_datei()
