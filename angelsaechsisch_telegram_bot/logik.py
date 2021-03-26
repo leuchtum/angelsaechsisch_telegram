@@ -2,6 +2,7 @@ import random
 from datetime import date, datetime
 import logging
 import json
+import re
 
 DB_PFAD = "/angelsaechsisch_telegram_bot/data"
 EN_PFAD = "/google-10000-english.txt"
@@ -42,7 +43,11 @@ class Vergleicher():
         return en_clean
 
     def beinhaltet_en(self, worte):
-        worte = [i.lower() for i in worte]
+        def putzen(wort):
+            wort = re.sub('[^A-Za-z0-9]+', '', wort)
+            return wort.lower()
+        
+        worte = [putzen(i) for i in worte]
         worte = set(worte)
 
         anzahl = len(worte)
