@@ -1,8 +1,9 @@
 import random
-from datetime import date, datetime
+from datetime import datetime
 import logging
 import json
 import re
+import os
 
 DB_PFAD = "/angelsaechsisch_telegram_bot/data"
 EN_PFAD = "/google-10000-english.txt"
@@ -166,6 +167,10 @@ class Runterkühler():
         
     def lese_von_datei(self):
         pfad = self.rootpfad + DB_PFAD + GRZ_PFAD
+        
+        if not os.path.exists(pfad):
+            self.schreibe_in_datei()
+            
         with open(pfad, "r") as datei:
             self.grenzen = json.load(datei)
 
