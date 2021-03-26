@@ -48,9 +48,20 @@ class Vergleicher():
 class Antworten():
     def __init__(self, pfad):
         self.antworten = _lese_txt(pfad + DB_PFAD + ANT_PFAD)
+        self.generatoren = {}
 
     def zufall_antwort(self):
         return random.choice(self.antworten)
+    
+    def nächste_antwort(self, gruppenname):
+        def antworten_generator(antworten):
+            while True:
+                yield from antworten
+        
+        if gruppenname not in self.generatoren:
+            self.generatoren[gruppenname] = antworten_generator(self.antworten)
+            
+        return next(self.generatoren[gruppenname])
 
 
 def _lese_txt(pfad):
@@ -126,10 +137,12 @@ class Runterkühler():
 
     def setze_amtag(self, gruppenname, amtag):
         self.grenzen[gruppenname]["amtag"] = amtag
+        self.amtag[gruppenname] = 0
         self.schreibe_in_datei()
 
     def setze_warte(self, gruppenname, warte):
         self.grenzen[gruppenname]["warte"] = warte
+        self.warte[gruppenname] = 0
         self.schreibe_in_datei()
         
     def schreibe_in_datei(self):
