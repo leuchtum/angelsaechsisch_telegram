@@ -28,7 +28,7 @@ class Bot():
 
     def __hilfe(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
-            gruppenname = update.message.chat.title.replace(" ", "_")
+            gruppenname, nutzer = self.extrahiere(update)
             nachricht = (
                 "<b>Hallo Sportsfreunde!</b>\n"
                 "\n"
@@ -58,12 +58,12 @@ class Bot():
                 "Wenn ich in Zukunft auf dieses Wort nicht mehr reagieren soll, "
                 "nutzt einfach dieses Kommando."
             )
-            self.__senden_log(update, "HILFE_NACHRICHT")
+            self.__senden_log(update, context, "HILFE_NACHRICHT")
             update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __warte(self, update, context):
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context, update):
-            gruppenname = update.message.chat.title.replace(" ", "_")
+            gruppenname, nutzer = self.extrahiere(update)
             zeit = context.args[0]
             try:
                 zeit = int(zeit)
@@ -76,12 +76,12 @@ class Bot():
             except:
                 nachricht = "Ich habe dich leider nicht verstanden."
 
-            self.__senden_log(update, "AMTAG_NACHRICHT")
+            self.__senden_log(update, context, "AMTAG_NACHRICHT")
             update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __amtag(self, update, context):
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context, update):
-            gruppenname = update.message.chat.title.replace(" ", "_")
+            gruppenname, nutzer = self.extrahiere(update)
             maximal = context.args[0]
             try:
                 maximal = int(maximal)
@@ -96,17 +96,17 @@ class Bot():
             except:
                 nachricht = "Ich habe dich leider nicht verstanden."
 
-            self.__senden_log(update, "AMTAG_NACHRICHT")
+            self.__senden_log(update, context, "AMTAG_NACHRICHT")
             update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __zurücksetzen(self, update, context):
         if self.__ist_gruppenunterhaltung(update, update):
-            gruppenname = update.message.chat.title.replace(" ", "_")
+            gruppenname, nutzer = self.extrahiere(update)
             self.kühl.zurücksetzen(gruppenname)
             nachricht = (
                 "Erledigt!"
             )
-            self.__senden_log(update, "ZURÜCKSETZEN_NACHRICHT")
+            self.__senden_log(update, context, "ZURÜCKSETZEN_NACHRICHT")
             update.message.reply_text(nachricht)
 
     def __ausnahme(self, update, context):
@@ -116,21 +116,20 @@ class Bot():
             nachricht = (
                 f"Alles klar, ab sofort reagiere ich auf '{ausnahme}' nicht mehr."
             )
-            self.__senden_log(update, "AUSNAHME_NACHRICHT")
+            self.__senden_log(update, context, "AUSNAHME_NACHRICHT")
             update.message.reply_text(nachricht)
 
     def __lesen(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
             nachricht = update.message.text
-            gruppenname = update.message.chat.title.replace(" ", "_")
-            nutzer = update.message.from_user.full_name.replace(" ", "_")
+            gruppenname, nutzer = self.extrahiere(update)
             worte = self.__aufbereiten(nachricht)
 
             logger.info('Erhalten: %s@%s: %s', nutzer, gruppenname, nachricht)
 
             if self.vgl.beinhaltet_en(worte) and self.kühl.kühl_genug(gruppenname):
                 antwort = self.ant.nächste_antwort(gruppenname)
-                self.__senden_log(update, antwort)
+                self.__senden_log(update, context, antwort)
                 update.message.reply_text(
                     "<b>"+antwort+"</b>", parse_mode="HTML")
 
@@ -151,15 +150,19 @@ class Bot():
     def __aufbereiten(self, string):
         return string.split(" ")
 
-    def __senden_log(self, update, nachricht):
-        gruppenname = update.message.chat.title.replace(" ", "_")
-        nutzer = update.message.from_user.full_name.replace(" ", "_")
+    def __senden_log(self, update, context, nachricht):
+        gruppenname, nutzer = self.extrahiere(update)
         logger.info('Senden: %s@%s: %s', nutzer, gruppenname, nachricht)
 
     def __fehler(self, update, context):
         logger.warning(
             'Nachricht "%s" hat einen Fehler erzeugt: "%s"', update, context.error)
 
+    def extrahiere(self, update):
+        gruppenname = update.message.chat.title.replace(" ", "_")
+        nutzer = update.message.from_user.full_name.replace(" ", "_")
+        return gruppenname, nutzer
+    
     def arbeite(self):
         self.updater.start_polling()
         self.updater.idle()
