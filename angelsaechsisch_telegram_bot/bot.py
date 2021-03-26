@@ -28,16 +28,16 @@ class Bot():
 
     def __hilfe(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
-            gruppenname, nutzer = self.extrahiere(update)
+            gruppennummer, nutzernummer = self.extrahiere(update)
             nachricht = (
                 "<b>Hallo Sportsfreunde!</b>\n"
                 "\n"
                 "Meine Aufgabe ist es zu überwachen, dass hier "
                 "nur reinstes und feinstes Deutsch genutzt wird. "
                 "Im Moment erinnere ich euch daran "
-                f"<b>maximal {self.kühl.bekomme_amtag(gruppenname)} pro Tag</b> "
+                f"<b>maximal {self.kühl.bekomme_amtag(gruppennummer)} pro Tag</b> "
                 "mit einem <b>Mindestabstand von "
-                f"{int(self.kühl.bekomme_warte(gruppenname)/60)} Minuten</b>.\n"
+                f"{int(self.kühl.bekomme_warte(gruppennummer)/60)} Minuten</b>.\n"
                 "\n"
                 "Wenn euch diese Einstellungen nicht genehm sind, könnt ihr "
                 "sie natürlich anpassen. Dazu gibt es folgende Befehle:\n"
@@ -63,11 +63,11 @@ class Bot():
 
     def __warte(self, update, context):
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context, update):
-            gruppenname, nutzer = self.extrahiere(update)
+            gruppennummer, nutzernummer = self.extrahiere(update)
             zeit = context.args[0]
             try:
                 zeit = int(zeit)
-                self.kühl.setze_warte(gruppenname, zeit*60)
+                self.kühl.setze_warte(gruppennummer, zeit*60)
                 nachricht = (
                 "Aber gerne doch! "
                 "Die Rückkühlzeit zwischen den höflichen Erinnerungen beträgt "
@@ -81,11 +81,11 @@ class Bot():
 
     def __amtag(self, update, context):
         if self.__ist_gruppenunterhaltung(update) and self.__hat_ein_argument(context, update):
-            gruppenname, nutzer = self.extrahiere(update)
+            gruppennummer, nutzernummer = self.extrahiere(update)
             maximal = context.args[0]
             try:
                 maximal = int(maximal)
-                self.kühl.setze_amtag(gruppenname, maximal)
+                self.kühl.setze_amtag(gruppennummer, maximal)
                 nachricht = (
                     "Wie du willst, Kamerad! "
                     "Ich erinnere euch nun maximal "
@@ -100,9 +100,9 @@ class Bot():
             update.message.reply_text(nachricht, parse_mode="HTML")
 
     def __zurücksetzen(self, update, context):
-        if self.__ist_gruppenunterhaltung(update, update):
-            gruppenname, nutzer = self.extrahiere(update)
-            self.kühl.zurücksetzen(gruppenname)
+        if self.__ist_gruppenunterhaltung(update):
+            gruppennummer, nutzernummer = self.extrahiere(update)
+            self.kühl.zurücksetzen(gruppennummer)
             nachricht = (
                 "Erledigt!"
             )
@@ -122,13 +122,13 @@ class Bot():
     def __lesen(self, update, context):
         if self.__ist_gruppenunterhaltung(update):
             nachricht = update.message.text
-            gruppenname, nutzer = self.extrahiere(update)
+            gruppennummer, nutzernummer = self.extrahiere(update)
             worte = self.__aufbereiten(nachricht)
 
-            logger.info('Erhalten: %s@%s: %s', nutzer, gruppenname, nachricht)
+            logger.info('Erhalten: %s@%s: %s', nutzernummer, gruppennummer, nachricht)
 
-            if self.vgl.beinhaltet_en(worte) and self.kühl.kühl_genug(gruppenname):
-                antwort = self.ant.nächste_antwort(gruppenname)
+            if self.vgl.beinhaltet_en(worte) and self.kühl.kühl_genug(gruppennummer):
+                antwort = self.ant.nächste_antwort(gruppennummer)
                 self.__senden_log(update, context, antwort)
                 update.message.reply_text(
                     "<b>"+antwort+"</b>", parse_mode="HTML")
@@ -151,17 +151,17 @@ class Bot():
         return string.split(" ")
 
     def __senden_log(self, update, context, nachricht):
-        gruppenname, nutzer = self.extrahiere(update)
-        logger.info('Senden: %s@%s: %s', nutzer, gruppenname, nachricht)
+        gruppennummer, nutzernummer = self.extrahiere(update)
+        logger.info('Senden: %s@%s: %s', nutzernummer, gruppennummer, nachricht)
 
     def __fehler(self, update, context):
         logger.warning(
             'Nachricht "%s" hat einen Fehler erzeugt: "%s"', update, context.error)
 
     def extrahiere(self, update):
-        gruppenname = update.message.chat.title.replace(" ", "_")
-        nutzer = update.message.from_user.full_name.replace(" ", "_")
-        return gruppenname, nutzer
+        gruppennummer = str(update.message.chat.id)
+        nutzernummer = str(update.message.from_user.id)
+        return gruppennummer, nutzernummer
     
     def arbeite(self):
         self.updater.start_polling()
