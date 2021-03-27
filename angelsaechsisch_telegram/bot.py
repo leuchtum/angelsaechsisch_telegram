@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 class Bot():
     def __init__(self, key):
-        self.vgl = Vergleicher(os.getcwd())
-        self.ant = Antworten(os.getcwd())
-        self.kühl = Runterkühler(os.getcwd())
+        self.vgl = Vergleicher()
+        self.ant = Antworten()
+        self.kühl = Runterkühler()
 
         self.updater = Updater(key, use_context=True)
         self.dp = self.updater.dispatcher

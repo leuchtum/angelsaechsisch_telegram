@@ -4,13 +4,14 @@ import logging
 import json
 import re
 import os
+import pathlib
 
-DB_PFAD = "/angelsaechsisch_telegram/data"
-EN_PFAD = "/google-10000-english.txt"
-DE_PFAD = "/de.txt"
-AUS_PFAD = "/ausnahmen.txt"
-ANT_PFAD = "/antworten.txt"
-GRZ_PFAD = "/grenzen.json"
+DB_PFAD = "data"
+EN_PFAD = "google-10000-english.txt"
+DE_PFAD = "de.txt"
+AUS_PFAD = "ausnahmen.txt"
+ANT_PFAD = "antworten.txt"
+GRZ_PFAD = "grenzen.json"
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +30,14 @@ def _schreibe_txt(pfad, zeile):
 
 
 class Vergleicher():
-    def __init__(self, pfad):
-        self.englisch = self.__bekomme_englisch(pfad)
+    def __init__(self):
+        self.pfad = pathlib.Path(__file__).parent
+        self.englisch = self.__bekomme_englisch()
 
-    def __bekomme_englisch(self, pfad):
-        self.rootpfad = pfad
-        en_roh = _lese_txt(self.rootpfad + DB_PFAD + EN_PFAD)
-        de_roh = _lese_txt(self.rootpfad + DB_PFAD + DE_PFAD)
-        aus_roh = _lese_txt(self.rootpfad + DB_PFAD + AUS_PFAD)
+    def __bekomme_englisch(self):
+        en_roh = _lese_txt(f"{self.pfad}/{DB_PFAD}/{EN_PFAD}")
+        de_roh = _lese_txt(f"{self.pfad}/{DB_PFAD}/{DE_PFAD}")
+        aus_roh = _lese_txt(f"{self.pfad}/{DB_PFAD}/{AUS_PFAD}")
 
         en = set(en_roh)
         de = set(de_roh)
@@ -74,8 +75,9 @@ class Vergleicher():
 
 
 class Antworten():
-    def __init__(self, pfad):
-        self.antworten = _lese_txt(pfad + DB_PFAD + ANT_PFAD)
+    def __init__(self):
+        self.pfad = pathlib.Path(__file__).parent
+        self.antworten = _lese_txt(f"{self.pfad}/{DB_PFAD}/{ANT_PFAD}")
         self.generatoren = {}
 
     def zufall_antwort(self):
@@ -97,8 +99,8 @@ class Runterkühler():
     STANDARD_ABWARTEN = 5*60
     STANDARD_AMTAG = 10
 
-    def __init__(self, pfad) -> None:
-        self.rootpfad = pfad
+    def __init__(self) -> None:
+        self.pfad = pathlib.Path(__file__).parent
         self.heute = datetime.now().date()
         self.warte = {}
         self.amtag = {}
@@ -167,12 +169,12 @@ class Runterkühler():
         self.schreibe_in_datei()
 
     def schreibe_in_datei(self):
-        pfad = self.rootpfad + DB_PFAD + GRZ_PFAD
+        pfad = f"{self.pfad}/{DB_PFAD}/{GRZ_PFAD}"
         with open(pfad, "w") as datei:
             json.dump(self.grenzen, datei)
 
     def lese_von_datei(self):
-        pfad = self.rootpfad + DB_PFAD + GRZ_PFAD
+        pfad = f"{self.pfad}/{DB_PFAD}/{GRZ_PFAD}"
 
         if not os.path.exists(pfad):
             self.schreibe_in_datei()
