@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "angelsaechsisch_telegram"
-version = "0.1.2"
+version = "0.1.3"
 readme = "README.md"
 description = "Ein wundervoller Telegram Roboter, der dich höflich daran erinnert kein Angelsächsisch zu nutzen. Nach dem Vorbild des besten Unter's dieser Erde: r/ich_iel"
 authors = ["leuchtum <acct.d-mueller@mailbox.org>"]
