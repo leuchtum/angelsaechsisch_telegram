@@ -5,7 +5,7 @@ import json
 import re
 import os
 
-DB_PFAD = "/angelsaechsisch_telegram_bot/data"
+DB_PFAD = "/angelsaechsisch_telegram/data"
 EN_PFAD = "/google-10000-english.txt"
 DE_PFAD = "/de.txt"
 AUS_PFAD = "/ausnahmen.txt"
