@@ -70,8 +70,8 @@ class Vergleicher():
         return len(worte - self.englisch) != anzahl
 
     def schreibe_ausnahme(self, ausnahme):
-        _schreibe_txt(self.rootpfad + DB_PFAD + AUS_PFAD, ausnahme)
-        self.__init__(self.rootpfad)
+        _schreibe_txt(f"{self.pfad}/{DB_PFAD}/{AUS_PFAD}", ausnahme)
+        self.__init__()
 
 
 class Antworten():
